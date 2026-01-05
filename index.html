@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement Réussi - QrCode-Pay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 650px;
+            width: 100%;
+            padding: 3rem 2rem;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .icon {
+            font-size: 6rem;
+            margin-bottom: 1.5rem;
+            animation: bounce 1s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: #D4EDDA;
+            color: #155724;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        .message {
+            color: #555;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .receipt {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+            border: 2px dashed #4CAF50;
+        }
+
+        .receipt-header {
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 1rem;
+        }
+
+        .receipt-header h2 {
+            color: #667eea;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        .receipt-item:last-child {
+            border-bottom: none;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 2px solid #4CAF50;
+        }
+
+        .receipt-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .receipt-value {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .total {
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+            color: #4CAF50;
+        }
+
+        .success-message {
+            background: #D4EDDA;
+            border-left: 4px solid #4CAF50;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: left;
+            margin: 1.5rem 0;
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
+            color: #155724;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5568d3;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .actions, .share-buttons {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas class="confetti" id="confetti"></canvas>
+    
+    <div class="container">
+        <div class="icon">✅</div>
+        <h1>Paiement Réussi !</h1>
+        <div class="status">✓ Transaction confirmée</div>
+        
+        <p class="message">
+            Félicitations ! Votre paiement a été effectué avec succès. Un reçu a été envoyé à votre numéro.
+        </p>
+
+        <div class="receipt">
+            <div class="receipt-header">
+                <h2>🧾 Reçu de Transaction</h2>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">QrCode-Pay</p>
+            </div>
+
+            <div class="receipt-item">
+                <span class="receipt-label">Référence</span>
+                <span class="receipt-value">TRX-2026-00123</span>
+            </div>
+            <div class="receipt-item">
+                <span class="receipt-label">Date & Heure</span>
+                <span class="receipt-value">05/01/2026 - 14:32</span>
+            </div>
+            <div class="receipt-item">
+                <span class="receipt-label">Marchand</span>
+                <span class="receipt-value">Boutique QrCode-Pay</span>
+            </div>
+            <div class="receipt-item">
+                <span class="receipt-label">Description</span>
+                <span class="receipt-value">Achat de produits</span>
+            </div>
+            <div class="receipt-item">
+                <span class="receipt-label">Opérateur</span>
+                <span class="receipt-value">MTN Mobile Money</span>
+            </div>
+            <div class="receipt-item">
+                <span class="receipt-label">Numéro</span>
+                <span class="receipt-value">+237 6XX XX XX XX</span>
+            </div>
+            <div class="receipt-item">
+                <span class="receipt-label">Frais</span>
+                <span class="receipt-value">0 FCFA</span>
+            </div>
+            <div class="receipt-item total">
+                <span class="receipt-label">MONTANT TOTAL</span>
+                <span class="receipt-value">5,000 FCFA</span>
+            </div>
+        </div>
+
+        <div class="success-message">
+            <strong>✓ Transaction sécurisée</strong><br>
+            Votre paiement a été traité en toute sécurité. Le marchand a été notifié et votre commande sera traitée dans les plus brefs délais.
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="downloadReceipt()">
+                📥 Télécharger le reçu
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()">
+                🖨️ Imprimer
+            </button>
+            <a href="https://parfait217.github.io/qrcode-pay/" class="btn btn-outline">
+                🏠 Retour à l'accueil
+            </a>
+        </div>
+
+        <div class="share-buttons">
+            <button class="share-btn" style="background: #25D366; color: white;" onclick="shareWhatsApp()">
+                WhatsApp
+            </button>
+            <button class="share-btn" style="background: #0088cc; color: white;" onclick="shareTelegram()">
+                Telegram
+            </button>
+            <button class="share-btn" style="background: #1877f2; color: white;" onclick="shareFacebook()">
+                Facebook
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Animation confetti
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const confettiPieces = [];
+        const colors = ['#667eea', '#764ba2', '#4CAF50', '#FFC107', '#f5576c'];
+
+        for (let i = 0; i < 50; i++) {
+            confettiPieces.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * 10 + 5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 10
+            });
+        }
+
+        function drawConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confettiPieces.forEach((p, i) => {
+                ctx.beginPath();
+                ctx.lineWidth = p.r / 2;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                ctx.stroke();
+
+                p.y += p.d;
+                p.tilt = Math.sin(p.y * 0.05) * 5;
+
+                if (p.y > canvas.height) {
+                    confettiPieces[i] = {
+                        x: Math.random() * canvas.width,
+                        y: -20,
+                        r: p.r,
+                        d: p.d,
+                        color: p.color,
+                        tilt: p.tilt
+                    };
+                }
+            });
+            requestAnimationFrame(drawConfetti);
+        }
+
+        drawConfetti();
+
+        // Stop confetti after 5 seconds
+        setTimeout(() => {
+            canvas.style.display = 'none';
+        }, 5000);
+
+        function downloadReceipt() {
+            alert('📥 Téléchargement du reçu en cours...');
+            // Simulation de téléchargement
+            setTimeout(() => {
+                alert('✅ Reçu téléchargé avec succès !');
+            }, 1000);
+        }
+
+        function shareWhatsApp() {
+            const text = "✅ Paiement réussi sur QrCode-Pay ! Montant: 5,000 FCFA - Réf: TRX-2026-00123";
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function shareTelegram() {
+            const text = "✅ Paiement réussi sur QrCode-Pay ! Montant: 5,000 FCFA";
+            window.open(`https://t.me/share/url?url=https://qrcode-pay.cm&text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function shareFacebook() {
+            window.open('https://www.facebook.com/sharer/sharer.php?u=https://qrcode-pay.cm', '_blank');
+        }
+    </script>
+</body>
+</html>
